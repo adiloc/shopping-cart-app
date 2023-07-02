@@ -3,12 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
     <title>Shopping Cart</title>
   </head>
   <body>
-    <input id="ip_field" type="text" placeholder="Cart">
-    <button id="add_btn">Add to Cart</button>
-    <script src="index.js" type="module"></script>
+    <div id="container">
+      <img src="/assets/cat.png">
+      <input id="input_field" type="text" placeholder="Cart">
+      <button id="add_btn">Add to Cart</button>
+      <ul id="shopping_list"></ul>
+      <script src="index.js" type="module"></script>
+    </div>
   </body>
 </html>
