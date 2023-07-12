@@ -1,49 +1,112 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
-import { getDatabase, ref, push, onValue } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js'
-import { getAuth, connectAuthEmulator, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'
 
-import data from '/data.js'
+import { 
+    getDatabase, 
+    ref, 
+    push, 
+    onValue, 
+    remove
+ } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"
 
-const app = initializeApp(data)
-const database = getDatabase(app)
-const shopItems = ref(database, 'testoasa')
+import { 
+  getFirestore
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
+
+import { 
+  firebaseConfig,
+  signedIn,
+  signedOut, 
+  signInBtn,
+  signOutBtn,
+  userDetails,
+  inputField,
+  cartBtn
+} from '/ui.js'
+
+const app = initializeApp(firebaseConfig)
+
+const provider = new GoogleAuthProvider();
+
 const auth = getAuth(app)
 
 
 
-const inputFieldEl = document.getElementById('input_field')
-const addBtnEl = document.getElementById('add_btn')
-const shoppingList = document.getElementById('shopping_list')
+let shoppingListInDB;
+let unsubscribe;
+
+signInBtn.onclick = () => signInWithPopup(provider);
+
+signOutBtn.onclick = () => signOut();
+
+onAuthStateChanged(user => {
+    if (user) {
+        // signed in
+        signedIn.hidden = false;
+        signedOut.hidden = true;
+        userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>User ID: ${user.uid}</p>`;
+    } else {
+        // not signed in
+        signedIn.hidden = true;
+        signedOut.hidden = false;
+        userDetails.innerHTML = '';
+    }
+});
 
 
-addEventListener('click', render)
-addEventListener('keypress', render)
 
-function render(e) {
-  if(e.target.id === "add_btn" || e.key === 'Enter') {
-    let inputValue = inputFieldEl.value
-    push(shopItems, inputValue)
-    inputFieldEl.value = ''
-  }
-}
+///// Firestore /////
 
-onValue(shopItems, function(snapshot) {
-  
-  shoppingList.innerHTML = ''
-  let itemsArray = Object.entries(snapshot.val())
-  for(let item in itemsArray){
-    let curentItem = itemsArray[item]
-    let curentItemId = curentItem[0]
-    let curentItemValue = curentItem[1]
-    getHtml(curentItemValue)
-  }
+const db = getFirestore(app);
 
-})
+const createThing = document.getElementById('createThing');
+const thingsList = document.getElementById('thingsList');
 
-function getHtml(item) {
-  shoppingList.innerHTML += `
-      <li>
-        ${item}
-      </li>
-    `
-}
+
+let thingsRef;
+let unsubscribe;
+
+auth.onAuthStateChanged(user => {
+
+    if (user) {
+
+        // Database Reference
+        thingsRef = db.collection('things')
+
+        createThing.onclick = () => {
+
+            const { serverTimestamp } = firebase.firestore.FieldValue;
+
+            thingsRef.add({
+                uid: user.uid,
+                name: faker.commerce.productName(),
+                createdAt: serverTimestamp()
+            });
+        }
+
+
+        // Query
+        unsubscribe = thingsRef
+            .where('uid', '==', user.uid)
+            .orderBy('createdAt') // Requires a query
+            .onSnapshot(querySnapshot => {
+                
+                // Map results to an array of li elements
+
+                const items = querySnapshot.docs.map(doc => {
+
+                    return `<li>${doc.data().name}</li>`
+
+                });
+
+                thingsList.innerHTML = items.join('');
+
+            });
+
+
+
+    } else {
+        // Unsubscribe when the user signs out
+        unsubscribe && unsubscribe();
+    }
+});
+
