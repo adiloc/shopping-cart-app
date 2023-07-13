@@ -1,6 +1,13 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
 
 import { 
+    getAuth,
+    signInWithPopup,
+    GoogleAuthProvider,
+    signOut
+ } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"
+
+import { 
     getDatabase, 
     ref, 
     push, 
@@ -8,35 +15,17 @@ import {
     remove
  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"
 
-import { 
-  getFirestore
-} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
-
-import { 
-  firebaseConfig,
-  signedIn,
-  signedOut, 
-  signInBtn,
-  signOutBtn,
-  userDetails,
-  inputField,
-  cartBtn
-} from '/ui.js'
 
 const app = initializeApp(firebaseConfig)
-
-const provider = new GoogleAuthProvider();
-
 const auth = getAuth(app)
-
+const provider = new GoogleAuthProvider();
 
 
 let shoppingListInDB;
 let unsubscribe;
 
 signInBtn.onclick = () => signInWithPopup(provider);
-
-signOutBtn.onclick = () => signOut();
+signOutBtn.onclick = () => signOut(auth);
 
 onAuthStateChanged(user => {
     if (user) {
@@ -52,14 +41,6 @@ onAuthStateChanged(user => {
     }
 });
 
-
-
-///// Firestore /////
-
-const db = getFirestore(app);
-
-const createThing = document.getElementById('createThing');
-const thingsList = document.getElementById('thingsList');
 
 
 let thingsRef;
