@@ -15,6 +15,17 @@ import {
     remove
  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"
 
+ const firebaseConfig = {
+    apiKey: "AIzaSyDsIQRTFS6KMgscM8nAtN6CeLWfWCiMFy0",
+    authDomain: "shopping-cart-305b8.firebaseapp.com",
+    databaseURL:
+      "https://shopping-cart-305b8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "shopping-cart-305b8",
+    storageBucket: "shopping-cart-305b8.appspot.com",
+    messagingSenderId: "394965173991",
+    appId: "1:394965173991:web:2a60c8f310b5ede6e58442",
+  };
+
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
