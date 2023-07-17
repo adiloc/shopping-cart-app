@@ -38,41 +38,42 @@ let unsubscribe;
 signInBtn.onclick = () => signInWithPopup(provider);
 signOutBtn.onclick = () => signOut(auth);
 
-onAuthStateChanged(user => {
+
+auth.onAuthStateChanged(user => {
     if (user) {
         // signed in
-        signedIn.hidden = false;
-        signedOut.hidden = true;
+        whenSignedIn.hidden = false;
+        whenSignedOut.hidden = true;
+        shop.hidden = false
         userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>User ID: ${user.uid}</p>`;
+        const uid = user.uid
     } else {
         // not signed in
-        signedIn.hidden = true;
-        signedOut.hidden = false;
+        shop.hidden = true
+        whenSignedIn.hidden = true;
+        whenSignedOut.hidden = false;
         userDetails.innerHTML = '';
     }
 });
 
-
-
-let thingsRef;
-let unsubscribe;
-
 auth.onAuthStateChanged(user => {
 
-    if (user) {
+    if(user) {
+        shoppingListInDB = ref(database, `shoppingList`)
 
-        // Database Reference
-        thingsRef = db.collection('things')
-
-        createThing.onclick = () => {
-
-            const { serverTimestamp } = firebase.firestore.FieldValue;
-
-            thingsRef.add({
-                uid: user.uid,
-                name: faker.commerce.productName(),
-                createdAt: serverTimestamp()
-            });
+        document.addEventListener("click", render)
+        document.addEventListener("keypress", render)
+        
+        function render(e) { 
+            if(e.target.dataset.addBtn || e.key === "Enter") {
+                let inputValue = inputFieldEl.value
+                shoppingListInDB = ref(database, `shoppingList/${user.uid}`)
+                
+                push(shoppingListInDB, inputValue)
+                
+                clearInputFieldEl()
+            }  
+            
         }
 
 
