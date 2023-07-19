@@ -42,15 +42,8 @@ button {
   font-family: 'Rubik', sans-serif;
 }
 
-button {
-  color: #FDFDFD;
-  background-color: #AC485A;
-  border: 0;
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 20px;
-  text-align: center;
-  font-family: 'Rubik', sans-serif;
+button:hover {
+  background-color: #432000;
   cursor: pointer;
 }
 

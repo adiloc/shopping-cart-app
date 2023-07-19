@@ -29,32 +29,44 @@ import {
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
-const provider = new GoogleAuthProvider();
+const database = getDatabase(app)
 
+const provider = new GoogleAuthProvider(auth)
 
-let shoppingListInDB;
-let unsubscribe;
+const inputFieldEl = document.getElementById("input-field")
+const addButtonEl = document.getElementById("add-button")
+const shoppingListEl = document.getElementById("shopping-list")
 
-signInBtn.onclick = () => signInWithPopup(provider);
-signOutBtn.onclick = () => signOut(auth);
+const whenSignedIn = document.getElementById('whenSignedIn')
+const whenSignedOut = document.getElementById('whenSignedOut')
 
+const signInBtn = document.getElementById('signInBtn')
+const signOutBtn = document.getElementById('signOutBtn')
+
+const shop = document.getElementById('shop')
+const userDetails = document.getElementById('userDetails')
+
+signInBtn.onclick = () => signInWithPopup(auth, provider)
+signOutBtn.onclick = () => signOut(auth)
+
+  
+let shoppingListInDB
+let unsubscribe
 
 auth.onAuthStateChanged(user => {
     if (user) {
-        // signed in
-        whenSignedIn.hidden = false;
-        whenSignedOut.hidden = true;
+        whenSignedIn.hidden = false
+        whenSignedOut.hidden = true
         shop.hidden = false
         userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>User ID: ${user.uid}</p>`;
         const uid = user.uid
     } else {
-        // not signed in
         shop.hidden = true
-        whenSignedIn.hidden = true;
-        whenSignedOut.hidden = false;
-        userDetails.innerHTML = '';
+        whenSignedIn.hidden = true
+        whenSignedOut.hidden = false
+        userDetails.innerHTML = ''
     }
-});
+})
 
 auth.onAuthStateChanged(user => {
 
@@ -73,33 +85,52 @@ auth.onAuthStateChanged(user => {
                 
                 clearInputFieldEl()
             }  
-            
         }
 
+        unsubscribe = shoppingListInDB = ref(database, `shoppingList/${user.uid}`);
+        onValue(shoppingListInDB, function(snapshot) {
+            if (snapshot.exists()) {
+                let itemsArray = Object.entries(snapshot.val())
 
-        // Query
-        unsubscribe = thingsRef
-            .where('uid', '==', user.uid)
-            .orderBy('createdAt') // Requires a query
-            .onSnapshot(querySnapshot => {
+                clearShoppingListEl()
                 
-                // Map results to an array of li elements
-
-                const items = querySnapshot.docs.map(doc => {
-
-                    return `<li>${doc.data().name}</li>`
-
-                });
-
-                thingsList.innerHTML = items.join('');
-
-            });
-
-
+                for (let i = 0; i < itemsArray.length; i++) {
+                    let currentItem = itemsArray[i]
+                    let currentItemID = currentItem[0]
+                    let currentItemValue = currentItem[1]
+                    appendItemToShoppingListEl(currentItem)
+                }    
+            } else {
+                shoppingListEl.innerHTML = "No items here... yet"
+            }
+        })
+        
+        function clearShoppingListEl() {
+            shoppingListEl.innerHTML = ""
+        }
+        
+        function clearInputFieldEl() {
+            inputFieldEl.value = ""
+        }
+        
+        function appendItemToShoppingListEl(item) {
+            let itemID = item[0]
+            let itemValue = item[1]
+            let newEl = document.createElement("li")
+            newEl.textContent = itemValue
+            
+            newEl.addEventListener("click", function() {
+                let exactLocationOfItemInDB = ref(database, `shoppingList/${user.uid}/${itemID}`)
+                
+                remove(exactLocationOfItemInDB)
+            })
+            
+            shoppingListEl.append(newEl)
+        }
 
     } else {
-        // Unsubscribe when the user signs out
-        unsubscribe && unsubscribe();
+        unsubscribe
     }
-});
+
+})
 
