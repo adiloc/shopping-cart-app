@@ -10,7 +10,7 @@ html, body {
 section {
   display: flex;
   flex-direction: column;
-  max-width: 320px;
+  max-width: 400px;
   margin: 30px auto;
 }
 
